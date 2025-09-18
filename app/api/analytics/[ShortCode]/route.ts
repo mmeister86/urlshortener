@@ -4,11 +4,11 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { shortCode: string } }
+  { params }: { params: Promise<{ ShortCode: string }> }
 ) {
   try {
     const supabase = createClient();
-    const { shortCode } = params;
+    const { ShortCode: shortCode } = await params;
 
     // Hole aktuellen User
     const {

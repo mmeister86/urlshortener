@@ -1,8 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ["geoip-lite"],
-  },
+  serverExternalPackages: ["geoip-lite"],
 
   // Output für Docker Standalone
   output: "standalone",
