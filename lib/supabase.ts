@@ -1,0 +1,19 @@
+// @ts-expect-error: Paket liefert evtl. keine Typen in dieser Umgebung
+import { createBrowserClient } from "@supabase/ssr";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
+
+// Admin client for server-side operations
+export const supabaseAdmin = createBrowserClient(
+  supabaseUrl,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+);
