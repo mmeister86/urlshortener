@@ -1,4 +1,3 @@
-// @ts-expect-error: Paket liefert evtl. keine Typen in dieser Umgebung
 import { createBrowserClient } from "@supabase/ssr";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;

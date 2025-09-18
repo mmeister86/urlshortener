@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/client";
-import { generateShortCode, isValidUrl, getClientIP } from "@/lib/utils";
+import { generateShortCode, isValidUrl } from "@/lib/utils";
+import { getClientIP } from "@/lib/server-utils";
 import { ratelimit } from "@/lib/rate-limit";
 import { z } from "zod";
 

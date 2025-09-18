@@ -1,4 +1,3 @@
-// @ts-expect-error: package may not ship types in this workspace environment
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 

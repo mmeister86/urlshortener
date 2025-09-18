@@ -1,4 +1,3 @@
-// @ts-expect-error: package may not ship types in this workspace environment
 import { createBrowserClient } from "@supabase/ssr";
 
 export const createClient = () =>
