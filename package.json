@@ -17,6 +17,7 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-toast": "^1.2.15",
     "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.57.4",
     "@types/geoip-lite": "^1.4.4",
     "@upstash/ratelimit": "^2.0.6",
     "@upstash/redis": "^1.35.3",
