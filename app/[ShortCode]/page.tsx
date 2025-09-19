@@ -6,12 +6,12 @@ import { after } from "next/server";
 
 interface Props {
   params: {
-    shortCode: string;
+    ShortCode: string;
   };
 }
 
 export default async function RedirectPage({ params }: Props) {
-  const { shortCode } = params;
+  const { ShortCode: shortCode } = params;
 
   console.log("🔍 Redirect Debug - shortCode:", shortCode);
 
