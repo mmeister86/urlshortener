@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/server";
 import { generateShortCode, isValidUrl } from "@/lib/utils";
 import { getClientIP } from "@/lib/server-utils";
 import { ratelimit } from "@/lib/rate-limit";
@@ -41,7 +41,16 @@ export async function POST(request: NextRequest) {
     // Hole aktuellen User (falls eingeloggt)
     const {
       data: { user },
+      error: authError
     } = await supabase.auth.getUser();
+
+    // Debug logging
+    console.log("API Route Auth Debug:", {
+      user_id: user?.id || 'NULL',
+      user_email: user?.email || 'NULL',
+      auth_error: authError,
+      has_user: !!user
+    });
 
     let shortCode = validatedData.customCode;
 
