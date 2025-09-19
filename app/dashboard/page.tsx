@@ -4,11 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, ExternalLink, Calendar } from "lucide-react";
-import dynamic from "next/dynamic";
-
-const UrlShortener = dynamic(() => import("@/components/url-shortener"), {
-  ssr: false,
-});
+import DashboardUrlShortener from "@/components/dashboard-url-shortener";
 
 export default async function DashboardPage() {
   const supabase = createClient();
@@ -21,7 +17,7 @@ export default async function DashboardPage() {
   }
 
   // Lade User's URLs mit Klick-Statistiken
-  const { data: urls, error } = await supabase
+  const { data: urls } = await supabase
     .from("urls")
     .select(
       `
@@ -57,7 +53,7 @@ export default async function DashboardPage() {
       <main className="container mx-auto px-4 py-8">
         {/* URL Shortener Integration */}
         <div className="mb-8">
-          <UrlShortener user={user} />
+          <DashboardUrlShortener user={user} />
         </div>
 
         {/* Links Section */}
