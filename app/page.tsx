@@ -22,7 +22,7 @@ export default async function HomePage() {
                 <Button asChild variant="outline">
                   <Link href="/dashboard">Dashboard</Link>
                 </Button>
-                <form action="/auth/signout" method="post">
+                <form action="/api/auth/signout" method="post">
                   <Button type="submit" variant="ghost">
                     Abmelden
                   </Button>
