@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase";
 import { getSession, promoteSessionToUser } from "@/lib/session-utils";
 
 /**
@@ -47,8 +48,8 @@ export async function POST(request: NextRequest) {
       finalSessionId: sessionId,
     });
 
-    // Debug: Check what URLs exist with this session_id
-    const { data: existingUrls, error: checkError } = await supabase
+    // Debug: Check what URLs exist with this session_id (using admin client)
+    const { data: existingUrls, error: checkError } = await supabaseAdmin
       .from("urls")
       .select("id, short_code, session_id, user_id")
       .eq("session_id", sessionId);
@@ -59,8 +60,8 @@ export async function POST(request: NextRequest) {
       urls: existingUrls,
     });
 
-    // Debug: Check ALL URLs with any session_id
-    const { data: allSessionUrls } = await supabase
+    // Debug: Check ALL URLs with any session_id (using admin client)
+    const { data: allSessionUrls } = await supabaseAdmin
       .from("urls")
       .select("id, short_code, session_id, user_id")
       .not("session_id", "is", null);
@@ -70,8 +71,10 @@ export async function POST(request: NextRequest) {
       sessionIds: allSessionUrls?.map((url) => url.session_id),
     });
 
-    // Start transaction: Update all session links to user links
-    const { data: claimedUrls, error: claimError } = await supabase
+    // Start transaction: Update all session links to user links (using admin client)
+    console.log("🔄 Starting UPDATE query for session_id:", sessionId);
+    
+    const { data: claimedUrls, error: claimError } = await supabaseAdmin
       .from("urls")
       .update({
         user_id: user.id,
@@ -79,6 +82,12 @@ export async function POST(request: NextRequest) {
       })
       .eq("session_id", sessionId)
       .select("id, short_code, custom_code, original_url");
+
+    console.log("📊 UPDATE Result:", {
+      data: claimedUrls,
+      error: claimError,
+      dataLength: claimedUrls?.length || 0
+    });
 
     if (claimError) {
       console.error("❌ Failed to claim session links:", claimError);
