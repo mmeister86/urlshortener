@@ -24,19 +24,21 @@ export default async function DashboardPage() {
     .order("created_at", { ascending: false });
 
   // Lade Clicks für jede URL separat
-  const urlsWithClicks = urls ? await Promise.all(
-    urls.map(async (url) => {
-      const { data: clicks } = await supabase
-        .from("clicks")
-        .select("*")
-        .eq("url_id", url.id);
-      
-      return {
-        ...url,
-        clicks: clicks || []
-      };
-    })
-  ) : [];
+  const urlsWithClicks = urls
+    ? await Promise.all(
+        urls.map(async (url) => {
+          const { data: clicks } = await supabase
+            .from("clicks")
+            .select("*")
+            .eq("url_id", url.id);
+
+          return {
+            ...url,
+            clicks: clicks || [],
+          };
+        })
+      )
+    : [];
 
   // Debug logging
   console.log("Dashboard Query Debug:", {
@@ -45,7 +47,7 @@ export default async function DashboardPage() {
     urlsWithClicks_count: urlsWithClicks?.length || 0,
     urls_data: urls,
     urlsWithClicks_data: urlsWithClicks,
-    error: error
+    error: error,
   });
 
   return (
@@ -91,9 +93,9 @@ export default async function DashboardPage() {
                 </p>
               </CardContent>
             </Card>
-        ) : (
-          <div className="grid gap-6">
-            {urlsWithClicks.map((url) => (
+          ) : (
+            <div className="grid gap-6">
+              {urlsWithClicks.map((url) => (
                 <Card key={url.id}>
                   <CardHeader>
                     <div className="flex items-start justify-between">
