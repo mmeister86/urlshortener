@@ -25,7 +25,6 @@ export function SignupForm({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -62,7 +61,8 @@ export function SignupForm({
         throw error;
       }
 
-      setSuccess(true);
+      // Direkte Umleitung nach erfolgreicher Registrierung (keine E-Mail-Bestätigung nötig)
+      router.push("/dashboard");
     } catch (error) {
       setError(
         error instanceof Error ? error.message : "Registrierung fehlgeschlagen"
@@ -71,37 +71,6 @@ export function SignupForm({
       setIsLoading(false);
     }
   };
-
-  if (success) {
-    return (
-      <div className={cn("flex flex-col gap-6", className)} {...props}>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-green-600">
-              ✓ Registrierung erfolgreich!
-            </CardTitle>
-            <CardDescription>
-              Wir haben dir eine Bestätigungs-E-Mail gesendet
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center space-y-4">
-              <p className="text-sm text-gray-600">
-                Bitte überprüfe deine E-Mails und klicke auf den
-                Bestätigungslink, um dein Konto zu aktivieren.
-              </p>
-              <Button
-                onClick={() => router.push("/anmelden")}
-                className="w-full"
-              >
-                Zur Anmeldung
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
