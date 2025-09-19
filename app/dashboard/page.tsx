@@ -17,7 +17,7 @@ export default async function DashboardPage() {
   }
 
   // Lade User's URLs mit Klick-Statistiken
-  const { data: urls } = await supabase
+  const { data: urls, error } = await supabase
     .from("urls")
     .select(
       `
@@ -27,6 +27,14 @@ export default async function DashboardPage() {
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
+
+  // Debug logging
+  console.log("Dashboard Query Debug:", {
+    user_id: user.id,
+    urls_count: urls?.length || 0,
+    urls_data: urls,
+    error: error
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
