@@ -1,8 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase";
-import { headers } from "next/headers";
-import { getLocationFromIP, parseUserAgent } from "@/lib/server-utils";
-import { after } from "next/server";
+import ClickTracker from "@/components/click-tracker";
 
 interface Props {
   params: {
@@ -35,37 +33,36 @@ export default async function RedirectPage({ params }: Props) {
     notFound();
   }
 
-  // Analytics sammeln (nach dem Redirect)
-  after(async () => {
-    try {
-      const headersList = await headers();
-      const userAgent = headersList.get("user-agent") || "";
-      const referer = headersList.get("referer") || "";
+  // Click-Tracking über Client Component vor Redirect
+  const trackingData = {
+    shortCode,
+    urlId: url.id,
+  };
 
-      // IP-Adresse extrahieren (vereinfacht für lokale Entwicklung)
-      const ip =
-        headersList.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
-
-      const location = await getLocationFromIP(ip);
-      const deviceInfo = parseUserAgent(userAgent);
-
-      await supabaseAdmin.from("clicks").insert({
-        url_id: url.id,
-        ip_address: ip,
-        user_agent: userAgent,
-        referer: referer || null,
-        country: location.country,
-        city: location.city,
-        device_type: deviceInfo.device_type,
-        browser: deviceInfo.browser,
-        os: deviceInfo.os,
-      });
-    } catch (error) {
-      console.error("Failed to track click:", error);
-    }
-  });
-
-  // Redirect zur Original URL
   console.log("✅ Redirect Debug - Redirecting to:", url.original_url);
-  redirect(url.original_url);
+
+  // Render ClickTracker Component für ein paar Millisekunden vor Redirect
+  return (
+    <div>
+      <ClickTracker
+        shortCode={trackingData.shortCode}
+        urlId={trackingData.urlId}
+      />
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            setTimeout(() => {
+              window.location.href = "${url.original_url}";
+            }, 100);
+          `,
+        }}
+      />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Weiterleitung...</p>
+        </div>
+      </div>
+    </div>
+  );
 }
