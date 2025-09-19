@@ -27,9 +27,14 @@ type FormData = z.infer<typeof formSchema>;
 
 interface UrlShortenerProps {
   user: User | null;
+  onSuccess?: (newUrl: {
+    shortUrl: string;
+    shortCode: string;
+    originalUrl: string;
+  }) => void;
 }
 
-export default function UrlShortener({ user }: UrlShortenerProps) {
+export default function UrlShortener({ user, onSuccess }: UrlShortenerProps) {
   const [result, setResult] = useState<{
     shortUrl: string;
     shortCode: string;
@@ -72,6 +77,11 @@ export default function UrlShortener({ user }: UrlShortenerProps) {
 
       setResult(result);
       form.reset();
+
+      // Callback auslösen für Parent-Component
+      if (onSuccess) {
+        onSuccess(result);
+      }
     } catch (error) {
       console.error("Error:", error);
       setError(

@@ -1,32 +1,50 @@
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
-import Link from "next/link";
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, ExternalLink, Calendar } from "lucide-react";
 import DashboardUrlShortener from "@/components/dashboard-url-shortener";
-import { truncateUrl } from "@/lib/utils";
+import UrlsList from "@/components/urls-list";
+import type { User } from "@supabase/supabase-js";
 
-export default async function DashboardPage() {
+interface Click {
+  id: string;
+  url_id: string;
+  created_at: string;
+  user_agent: string | null;
+  referer: string | null;
+  ip_address: string | null;
+}
+
+interface UrlWithClicks {
+  id: string;
+  user_id: string;
+  original_url: string;
+  short_code: string;
+  custom_code: string | null;
+  title: string | null;
+  created_at: string;
+  clicks: Click[];
+}
+
+export default function DashboardPage() {
+  const [user, setUser] = useState<User | null>(null);
+  const [urlsWithClicks, setUrlsWithClicks] = useState<UrlWithClicks[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/auth");
-  }
+  // Funktion zum Laden der URLs mit Clicks
+  const loadUrlsWithClicks = useCallback(
+    async (userId: string) => {
+      const { data: urls } = await supabase
+        .from("urls")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
 
-  // Lade User's URLs mit Klick-Statistiken
-  const { data: urls } = await supabase
-    .from("urls")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+      if (!urls) return [];
 
-  // Lade Clicks für jede URL separat
-  const urlsWithClicks = urls
-    ? await Promise.all(
+      const urlsWithClicksData = await Promise.all(
         urls.map(async (url) => {
           const { data: clicks } = await supabase
             .from("clicks")
@@ -38,8 +56,95 @@ export default async function DashboardPage() {
             clicks: clicks || [],
           };
         })
+      );
+
+      return urlsWithClicksData;
+    },
+    [supabase]
+  );
+
+  // Callback für neu erstellte URLs
+  const handleUrlCreated = useCallback(
+    async (newUrlResult: {
+      shortUrl: string;
+      shortCode: string;
+      originalUrl: string;
+    }) => {
+      console.log("Neue URL wurde erstellt:", newUrlResult);
+
+      // Aktuelle URLs neu laden um sicherzustellen, dass wir die neueste haben
+      if (user) {
+        const urlsData = await loadUrlsWithClicks(user.id);
+        setUrlsWithClicks(urlsData);
+      }
+    },
+    [user, loadUrlsWithClicks]
+  );
+
+  // Initial Load und User Check
+  useEffect(() => {
+    const checkUserAndLoadData = async () => {
+      const {
+        data: { user: currentUser },
+      } = await supabase.auth.getUser();
+
+      if (!currentUser) {
+        window.location.href = "/anmelden";
+        return;
+      }
+
+      setUser(currentUser);
+      const urlsData = await loadUrlsWithClicks(currentUser.id);
+      setUrlsWithClicks(urlsData);
+      setIsLoading(false);
+    };
+
+    checkUserAndLoadData();
+  }, [loadUrlsWithClicks, supabase.auth]);
+
+  // Optional: Realtime Subscription für Click-Updates (nur für Clicks, URLs werden via Callback aktualisiert)
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel("clicks-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "clicks",
+        },
+        async (payload) => {
+          console.log("Neuer Click hinzugefügt:", payload);
+          // Update der entsprechenden URL mit neuem Click
+          setUrlsWithClicks((prev) =>
+            prev.map((url) =>
+              url.id === payload.new.url_id
+                ? { ...url, clicks: [...url.clicks, payload.new as Click] }
+                : url
+            )
+          );
+        }
       )
-    : [];
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, supabase]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div>Lädt...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Redirect läuft schon
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -66,86 +171,13 @@ export default async function DashboardPage() {
       <main className="container mx-auto px-4 py-8">
         {/* URL Shortener Integration */}
         <div className="mb-8">
-          <DashboardUrlShortener user={user} />
+          <DashboardUrlShortener user={user} onSuccess={handleUrlCreated} />
         </div>
 
         {/* Links Section */}
         <div>
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Deine Links</h2>
-          {!urlsWithClicks || urlsWithClicks.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <h3 className="text-xl font-semibold mb-4">
-                  Noch keine Links erstellt
-                </h3>
-                <p className="text-gray-600">
-                  Verwende das Formular oben, um deinen ersten kurzen Link zu
-                  erstellen
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-6">
-              {urlsWithClicks.map((url) => (
-                <Card key={url.id}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg truncate">
-                          {url.title || truncateUrl(url.original_url)}
-                        </CardTitle>
-                        <p className="text-sm text-gray-500 truncate">
-                          {truncateUrl(url.original_url)}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-2 ml-4">
-                        <Button asChild size="sm" variant="outline">
-                          <a
-                            href={`${process.env.NEXT_PUBLIC_BASE_URL}/${
-                              url.custom_code || url.short_code
-                            }`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        </Button>
-                        <Button asChild size="sm">
-                          <Link
-                            href={`/analytics/${
-                              url.custom_code || url.short_code
-                            }`}
-                          >
-                            <BarChart3 className="h-4 w-4 mr-2" />
-                            Analytics
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <span className="font-mono bg-gray-100 px-2 py-1 rounded">
-                          /{url.custom_code || url.short_code}
-                        </span>
-                        <span className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-1" />
-                          {new Date(url.created_at).toLocaleDateString("de-DE")}
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-bold text-blue-600">
-                          {url.clicks?.length || 0}
-                        </p>
-                        <p className="text-sm text-gray-500">Klicks</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+          <UrlsList urls={urlsWithClicks} isLoading={isLoading} />
         </div>
       </main>
     </div>
