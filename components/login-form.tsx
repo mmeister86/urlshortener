@@ -70,7 +70,11 @@ export function LoginForm({
 
       alert("Magic Link wurde an deine E-Mail-Adresse gesendet!");
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Magic Link konnte nicht gesendet werden");
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Magic Link konnte nicht gesendet werden"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -99,7 +103,7 @@ export function LoginForm({
                   required
                 />
               </div>
-              
+
               {!showMagicLink && (
                 <div className="grid gap-3">
                   <div className="flex items-center">
@@ -112,12 +116,12 @@ export function LoginForm({
                       Magic Link verwenden
                     </button>
                   </div>
-                  <Input 
-                    id="password" 
-                    type="password" 
+                  <Input
+                    id="password"
+                    type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    required 
+                    required
                   />
                 </div>
               )}
@@ -144,18 +148,20 @@ export function LoginForm({
               )}
 
               <Button type="submit" disabled={isLoading} className="w-full">
-                {isLoading 
-                  ? "Wird geladen..." 
-                  : showMagicLink 
-                    ? "Magic Link senden" 
-                    : "Anmelden"
-                }
+                {isLoading
+                  ? "Wird geladen..."
+                  : showMagicLink
+                  ? "Magic Link senden"
+                  : "Anmelden"}
               </Button>
             </div>
-            
+
             <div className="mt-4 text-center text-sm">
               Noch kein Konto?{" "}
-              <Link href="/registrieren" className="underline underline-offset-4">
+              <Link
+                href="/registrieren"
+                className="underline underline-offset-4"
+              >
                 Registrieren
               </Link>
             </div>

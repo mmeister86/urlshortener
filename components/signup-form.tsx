@@ -62,7 +62,9 @@ export function SignupForm({
 
       setSuccess(true);
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Registrierung fehlgeschlagen");
+      setError(
+        error instanceof Error ? error.message : "Registrierung fehlgeschlagen"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -73,7 +75,9 @@ export function SignupForm({
       <div className={cn("flex flex-col gap-6", className)} {...props}>
         <Card>
           <CardHeader>
-            <CardTitle className="text-green-600">✓ Registrierung erfolgreich!</CardTitle>
+            <CardTitle className="text-green-600">
+              ✓ Registrierung erfolgreich!
+            </CardTitle>
             <CardDescription>
               Wir haben dir eine Bestätigungs-E-Mail gesendet
             </CardDescription>
@@ -81,11 +85,11 @@ export function SignupForm({
           <CardContent>
             <div className="text-center space-y-4">
               <p className="text-sm text-gray-600">
-                Bitte überprüfe deine E-Mails und klicke auf den Bestätigungslink, 
-                um dein Konto zu aktivieren.
+                Bitte überprüfe deine E-Mails und klicke auf den
+                Bestätigungslink, um dein Konto zu aktivieren.
               </p>
-              <Button 
-                onClick={() => router.push("/anmelden")} 
+              <Button
+                onClick={() => router.push("/anmelden")}
                 className="w-full"
               >
                 Zur Anmeldung
@@ -122,22 +126,22 @@ export function SignupForm({
               </div>
               <div className="grid gap-3">
                 <Label htmlFor="password">Passwort</Label>
-                <Input 
-                  id="password" 
-                  type="password" 
+                <Input
+                  id="password"
+                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required 
+                  required
                 />
               </div>
               <div className="grid gap-3">
                 <Label htmlFor="confirm-password">Passwort bestätigen</Label>
-                <Input 
-                  id="confirm-password" 
-                  type="password" 
+                <Input
+                  id="confirm-password"
+                  type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  required 
+                  required
                 />
               </div>
 
@@ -163,4 +167,3 @@ export function SignupForm({
     </div>
   );
 }
-
