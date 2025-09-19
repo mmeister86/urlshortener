@@ -2,26 +2,73 @@
 import { UAParser } from "ua-parser-js";
 
 export async function getLocationFromIP(ip: string) {
-  if (ip === "127.0.0.1" || ip === "::1") {
-    return { country: "Local", city: "Local" };
+  console.log("🌍 GeoIP Debug - Processing IP:", ip);
+
+  // Check for local/private IPs
+  if (
+    ip === "127.0.0.1" ||
+    ip === "::1" ||
+    ip.startsWith("192.168.") ||
+    ip.startsWith("10.") ||
+    ip.startsWith("172.")
+  ) {
+    console.log("🏠 Local/Private IP detected, using fallback location");
+    return { country: "Germany", city: "Local" }; // Fallback für lokale Entwicklung
   }
 
   try {
     // Dynamically import geoip-lite to handle potential missing data files
     const geoip = await import("geoip-lite");
-    const geo = geoip.default.lookup(ip);
-    if (!geo) return { country: "Unknown", city: "Unknown" };
+    console.log("📍 GeoIP module loaded, looking up:", ip);
 
-    return {
+    const geo = geoip.default.lookup(ip);
+    console.log("🔍 GeoIP result:", geo);
+
+    if (!geo) {
+      console.warn("❌ No GeoIP data found for IP:", ip);
+      return { country: "Unknown", city: "Unknown" };
+    }
+
+    const result = {
       country: geo.country,
       city: geo.city || "Unknown",
     };
+
+    console.log("✅ GeoIP success:", result);
+    return result;
   } catch (error) {
+    console.error("❌ GeoIP lookup failed for IP:", ip);
     if (error instanceof Error) {
-      console.warn("GeoIP lookup failed:", error.message);
+      console.error("Error details:", error.message);
     } else {
-      console.warn("GeoIP lookup failed:", error);
+      console.error("Error details:", error);
     }
+
+    // Fallback: Try simple external API for public IPs
+    if (
+      !ip.startsWith("127.") &&
+      !ip.startsWith("192.168.") &&
+      !ip.startsWith("10.")
+    ) {
+      try {
+        console.log("🌐 Trying fallback geolocation API for:", ip);
+        const response = await fetch(
+          `http://ip-api.com/json/${ip}?fields=country,city`
+        );
+        const data = await response.json();
+
+        if (data.country) {
+          console.log("✅ Fallback API success:", data);
+          return {
+            country: data.country,
+            city: data.city || "Unknown",
+          };
+        }
+      } catch (fallbackError) {
+        console.error("❌ Fallback API also failed:", fallbackError);
+      }
+    }
+
     return { country: "Unknown", city: "Unknown" };
   }
 }

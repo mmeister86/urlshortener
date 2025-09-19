@@ -19,11 +19,20 @@ export async function POST(request: NextRequest) {
     const userAgent = request.headers.get("user-agent") || "";
     const referer = request.headers.get("referer") || "";
 
-    // IP-Adresse extrahieren
+    // IP-Adresse extrahieren (mit Debug-Info)
+    const xForwardedFor = request.headers.get("x-forwarded-for");
+    const xRealIp = request.headers.get("x-real-ip");
+    const cfConnectingIp = request.headers.get("cf-connecting-ip");
+
     const ip =
-      request.headers.get("x-forwarded-for")?.split(",")[0] ||
-      request.headers.get("x-real-ip") ||
-      "127.0.0.1";
+      cfConnectingIp || xForwardedFor?.split(",")[0] || xRealIp || "127.0.0.1";
+
+    console.log("🔍 IP Debug - Headers:", {
+      xForwardedFor,
+      xRealIp,
+      cfConnectingIp,
+      finalIp: ip,
+    });
 
     console.log("🔍 Track Click Debug - Received:", {
       shortCode,
