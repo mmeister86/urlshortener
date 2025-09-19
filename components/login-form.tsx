@@ -44,8 +44,8 @@ export function LoginForm({
       }
 
       router.push("/dashboard");
-    } catch (error: any) {
-      setError(error.message || "Login fehlgeschlagen");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Login fehlgeschlagen");
     } finally {
       setIsLoading(false);
     }
@@ -69,8 +69,8 @@ export function LoginForm({
       }
 
       alert("Magic Link wurde an deine E-Mail-Adresse gesendet!");
-    } catch (error: any) {
-      setError(error.message || "Magic Link konnte nicht gesendet werden");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Magic Link konnte nicht gesendet werden");
     } finally {
       setIsLoading(false);
     }

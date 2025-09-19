@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
 
 export function SignupForm({
   className,
@@ -60,8 +61,8 @@ export function SignupForm({
       }
 
       setSuccess(true);
-    } catch (error: any) {
-      setError(error.message || "Registrierung fehlgeschlagen");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Registrierung fehlgeschlagen");
     } finally {
       setIsLoading(false);
     }
@@ -152,9 +153,9 @@ export function SignupForm({
             </div>
             <div className="mt-4 text-center text-sm">
               Bereits ein Konto?{" "}
-              <a href="/anmelden" className="underline underline-offset-4">
+              <Link href="/anmelden" className="underline underline-offset-4">
                 Anmelden
-              </a>
+              </Link>
             </div>
           </form>
         </CardContent>
