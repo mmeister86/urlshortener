@@ -17,7 +17,8 @@ interface Click {
 
 interface UrlWithClicks {
   id: string;
-  user_id: string;
+  user_id: string | null; // Can be null for anonymous links
+  session_id: string | null; // New field
   original_url: string;
   short_code: string;
   custom_code: string | null;

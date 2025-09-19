@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { generateShortCode, isValidUrl } from "@/lib/utils";
 import { getClientIP } from "@/lib/server-utils";
 import { ratelimit } from "@/lib/rate-limit";
+import { getOrCreateSession } from "@/lib/session-utils";
 import { z } from "zod";
 
 const shortenSchema = z.object({
@@ -38,18 +39,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Ungültige URL" }, { status: 400 });
     }
 
-    // Hole aktuellen User (falls eingeloggt)
+    // Hole aktuellen User (falls eingeloggt) und Session
     const {
       data: { user },
-      error: authError
+      error: authError,
     } = await supabase.auth.getUser();
 
+    // Hole oder erstelle Session für anonyme User
+    const session = await getOrCreateSession();
+
     // Debug logging
-    console.log("API Route Auth Debug:", {
-      user_id: user?.id || 'NULL',
-      user_email: user?.email || 'NULL',
+    console.log("🔍 Shorten API Debug:", {
+      user_id: user?.id || null,
+      user_email: user?.email || null,
+      session_id: session.anonymousId || null,
+      is_logged_in: !!user,
       auth_error: authError,
-      has_user: !!user
     });
 
     let shortCode = validatedData.customCode;
@@ -89,17 +94,23 @@ export async function POST(request: NextRequest) {
       } while (attempts <= 10);
     }
 
+    // Bestimme ob User eingeloggt ist oder Session-ID verwendet wird
+    const insertData = {
+      original_url: validatedData.url,
+      short_code: shortCode!,
+      custom_code: validatedData.customCode || null,
+      title: validatedData.title || null,
+      description: validatedData.description || null,
+      expires_at: validatedData.expiresAt || null,
+      user_id: user?.id || null,
+      session_id: user ? null : session.anonymousId, // Nur für anonyme User
+    };
+
+    console.log("💾 Inserting URL with data:", insertData);
+
     const { data: url, error } = await supabase
       .from("urls")
-      .insert({
-        original_url: validatedData.url,
-        short_code: shortCode!,
-        custom_code: validatedData.customCode || null,
-        title: validatedData.title || null,
-        description: validatedData.description || null,
-        expires_at: validatedData.expiresAt || null,
-        user_id: user?.id || null,
-      })
+      .insert(insertData)
       .select()
       .single();
 

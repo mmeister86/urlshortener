@@ -53,6 +53,9 @@ importers:
       geoip-lite:
         specifier: ^1.4.10
         version: 1.4.10
+      iron-session:
+        specifier: ^8.0.4
+        version: 8.0.4
       lucide-react:
         specifier: ^0.544.0
         version: 0.544.0(react@19.1.0)
@@ -1210,6 +1213,10 @@ packages:
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
+  cookie@0.7.2:
+    resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
+    engines: {node: '>= 0.6'}
+
   cookie@1.0.2:
     resolution: {integrity: sha512-9Kr/j4O16ISv8zBBhJoi4bXOYNTkFLOqSL3UDB0njXxCXNezjeyVrJyGOWtgfs/q2km1gwBcfH8q1yEGoMYunA==}
     engines: {node: '>=18'}
@@ -1623,6 +1630,12 @@ packages:
   ip-address@5.9.4:
     resolution: {integrity: sha512-dHkI3/YNJq4b/qQaz+c8LuarD3pY24JqZWfjB8aZx1gtpc2MDILu9L9jpZe1sHpzo/yWFweQVn+U//FhazUxmw==}
     engines: {node: '>= 0.10'}
+
+  iron-session@8.0.4:
+    resolution: {integrity: sha512-9ivNnaKOd08osD0lJ3i6If23GFS2LsxyMU8Gf/uBUEgm8/8CC1hrrCHFDpMo3IFbpBgwoo/eairRsaD3c5itxA==}
+
+  iron-webcrypto@1.2.1:
+    resolution: {integrity: sha512-feOM6FaSr6rEABp/eDfVseKyTMDt+KGpeB35SkVn9Tyn0CqvVsY3EwI0v5i8nMHyJnzCIQf7nsy3p41TPkJZhg==}
 
   is-array-buffer@3.0.5:
     resolution: {integrity: sha512-DDfANUiiG2wC1qawP66qlTugJeL5HyzMpfr8lLK+jMQirGzNod0B12cFB/9q838Ru27sBwfw78/rdoU7RERz6A==}
@@ -3504,6 +3517,8 @@ snapshots:
 
   concat-map@0.0.1: {}
 
+  cookie@0.7.2: {}
+
   cookie@1.0.2: {}
 
   cross-spawn@7.0.6:
@@ -4077,6 +4092,14 @@ snapshots:
       jsbn: 1.1.0
       lodash: 4.17.21
       sprintf-js: 1.1.2
+
+  iron-session@8.0.4:
+    dependencies:
+      cookie: 0.7.2
+      iron-webcrypto: 1.2.1
+      uncrypto: 0.1.3
+
+  iron-webcrypto@1.2.1: {}
 
   is-array-buffer@3.0.5:
     dependencies:

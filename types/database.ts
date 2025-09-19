@@ -14,6 +14,7 @@ export interface Database {
           expires_at: string | null;
           is_active: boolean;
           user_id: string | null;
+          session_id: string | null;
         };
         Insert: {
           id?: string;
@@ -27,6 +28,7 @@ export interface Database {
           expires_at?: string | null;
           is_active?: boolean;
           user_id?: string | null;
+          session_id?: string | null;
         };
         Update: {
           id?: string;
@@ -40,6 +42,7 @@ export interface Database {
           expires_at?: string | null;
           is_active?: boolean;
           user_id?: string | null;
+          session_id?: string | null;
         };
       };
       clicks: {

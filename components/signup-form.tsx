@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { clearSessionCache } from "@/lib/session-client";
 import Link from "next/link";
 
 export function SignupForm({
@@ -59,6 +60,41 @@ export function SignupForm({
 
       if (error) {
         throw error;
+      }
+
+      // Clear session cache after registration
+      clearSessionCache();
+
+      // Claim any anonymous session links after successful registration
+      try {
+        // Get current client session to send to claim API
+        const clientSession = await fetch("/api/session")
+          .then((res) => res.json())
+          .catch(() => null);
+
+        const claimResponse = await fetch("/api/claim-session-links", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sessionId: clientSession?.anonymousId,
+          }),
+        });
+
+        if (claimResponse.ok) {
+          const claimResult = await claimResponse.json();
+          console.log("🔗 Session links claimed:", claimResult);
+
+          if (claimResult.claimed > 0) {
+            console.log(
+              `✅ ${claimResult.claimed} Links zu deinem neuen Account hinzugefügt!`
+            );
+          }
+        }
+      } catch (claimError) {
+        console.warn("Failed to claim session links:", claimError);
+        // Don't block registration flow if claiming fails
       }
 
       // Direkte Umleitung nach erfolgreicher Registrierung (keine E-Mail-Bestätigung nötig)
