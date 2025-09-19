@@ -19,20 +19,32 @@ export default async function DashboardPage() {
   // Lade User's URLs mit Klick-Statistiken
   const { data: urls, error } = await supabase
     .from("urls")
-    .select(
-      `
-      *,
-      clicks(*)
-    `
-    )
+    .select("*")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
+
+  // Lade Clicks für jede URL separat
+  const urlsWithClicks = urls ? await Promise.all(
+    urls.map(async (url) => {
+      const { data: clicks } = await supabase
+        .from("clicks")
+        .select("*")
+        .eq("url_id", url.id);
+      
+      return {
+        ...url,
+        clicks: clicks || []
+      };
+    })
+  ) : [];
 
   // Debug logging
   console.log("Dashboard Query Debug:", {
     user_id: user.id,
     urls_count: urls?.length || 0,
+    urlsWithClicks_count: urlsWithClicks?.length || 0,
     urls_data: urls,
+    urlsWithClicks_data: urlsWithClicks,
     error: error
   });
 
@@ -67,7 +79,7 @@ export default async function DashboardPage() {
         {/* Links Section */}
         <div>
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Deine Links</h2>
-          {!urls || urls.length === 0 ? (
+          {!urlsWithClicks || urlsWithClicks.length === 0 ? (
             <Card>
               <CardContent className="text-center py-12">
                 <h3 className="text-xl font-semibold mb-4">
@@ -79,9 +91,9 @@ export default async function DashboardPage() {
                 </p>
               </CardContent>
             </Card>
-          ) : (
-            <div className="grid gap-6">
-              {urls.map((url) => (
+        ) : (
+          <div className="grid gap-6">
+            {urlsWithClicks.map((url) => (
                 <Card key={url.id}>
                   <CardHeader>
                     <div className="flex items-start justify-between">
