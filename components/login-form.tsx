@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,58 +12,152 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showMagicLink, setShowMagicLink] = useState(false);
+  const router = useRouter();
+  const supabase = createClient();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      router.push("/dashboard");
+    } catch (error: any) {
+      setError(error.message || "Login fehlgeschlagen");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleMagicLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      alert("Magic Link wurde an deine E-Mail-Adresse gesendet!");
+    } catch (error: any) {
+      setError(error.message || "Magic Link konnte nicht gesendet werden");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
+          <CardTitle>Bei deinem Konto anmelden</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Gib deine E-Mail-Adresse und dein Passwort ein
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={showMagicLink ? handleMagicLink : handleLogin}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-3">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">E-Mail</Label>
                 <Input
                   id="email"
                   type="email"
                   placeholder="m@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
-              <div className="grid gap-3">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
+              
+              {!showMagicLink && (
+                <div className="grid gap-3">
+                  <div className="flex items-center">
+                    <Label htmlFor="password">Passwort</Label>
+                    <button
+                      type="button"
+                      onClick={() => setShowMagicLink(true)}
+                      className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                    >
+                      Magic Link verwenden
+                    </button>
+                  </div>
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required 
+                  />
                 </div>
-                <Input id="password" type="password" required />
-              </div>
-              <div className="flex flex-col gap-3">
-                <Button type="submit" className="w-full">
-                  Login
-                </Button>
-                <Button variant="outline" className="w-full">
-                  Login with Google
-                </Button>
-              </div>
+              )}
+
+              {showMagicLink && (
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-4">
+                    Wir senden dir einen Magic Link an deine E-Mail-Adresse.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowMagicLink(false)}
+                    className="text-sm underline-offset-4 hover:underline"
+                  >
+                    Zurück zur Passwort-Anmeldung
+                  </button>
+                </div>
+              )}
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                  {error}
+                </div>
+              )}
+
+              <Button type="submit" disabled={isLoading} className="w-full">
+                {isLoading 
+                  ? "Wird geladen..." 
+                  : showMagicLink 
+                    ? "Magic Link senden" 
+                    : "Anmelden"
+                }
+              </Button>
             </div>
+            
             <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <a href="#" className="underline underline-offset-4">
-                Sign up
-              </a>
+              Noch kein Konto?{" "}
+              <Link href="/registrieren" className="underline underline-offset-4">
+                Registrieren
+              </Link>
             </div>
             <div className="mt-4 text-center text-sm">
               <Link href="/">Zurück zur Startseite</Link>
