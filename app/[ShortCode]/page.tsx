@@ -13,6 +13,8 @@ interface Props {
 export default async function RedirectPage({ params }: Props) {
   const { shortCode } = params;
 
+  console.log("🔍 Redirect Debug - shortCode:", shortCode);
+
   // Finde URL
   const { data: url, error } = await supabaseAdmin
     .from("urls")
@@ -21,7 +23,10 @@ export default async function RedirectPage({ params }: Props) {
     .eq("is_active", true)
     .single();
 
+  console.log("🔍 Redirect Debug - Database result:", { url, error });
+
   if (error || !url) {
+    console.log("🚨 Redirect Debug - URL not found, returning 404");
     notFound();
   }
 
@@ -61,5 +66,6 @@ export default async function RedirectPage({ params }: Props) {
   });
 
   // Redirect zur Original URL
+  console.log("✅ Redirect Debug - Redirecting to:", url.original_url);
   redirect(url.original_url);
 }
