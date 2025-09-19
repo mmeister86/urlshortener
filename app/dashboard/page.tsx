@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, ExternalLink, Calendar } from "lucide-react";
 import DashboardUrlShortener from "@/components/dashboard-url-shortener";
+import { truncateUrl } from "@/lib/utils";
 
 export default async function DashboardPage() {
   const supabase = createClient();
@@ -17,7 +18,7 @@ export default async function DashboardPage() {
   }
 
   // Lade User's URLs mit Klick-Statistiken
-  const { data: urls, error } = await supabase
+  const { data: urls } = await supabase
     .from("urls")
     .select("*")
     .eq("user_id", user.id)
@@ -40,15 +41,6 @@ export default async function DashboardPage() {
       )
     : [];
 
-  // Debug logging
-  console.log("Dashboard Query Debug:", {
-    user_id: user.id,
-    urls_count: urls?.length || 0,
-    urlsWithClicks_count: urlsWithClicks?.length || 0,
-    urls_data: urls,
-    urlsWithClicks_data: urlsWithClicks,
-    error: error,
-  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -101,10 +93,10 @@ export default async function DashboardPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-lg truncate">
-                          {url.title || url.original_url}
+                          {url.title || truncateUrl(url.original_url)}
                         </CardTitle>
                         <p className="text-sm text-gray-500 truncate">
-                          {url.original_url}
+                          {truncateUrl(url.original_url)}
                         </p>
                       </div>
                       <div className="flex items-center space-x-2 ml-4">
