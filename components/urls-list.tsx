@@ -227,7 +227,7 @@ export default function UrlsList({
       {urls.map((url) => (
         <Card key={url.id}>
           <CardHeader>
-            <div className="flex items-start justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div className="flex-1 min-w-0">
                 <CardTitle className="text-lg truncate">
                   {url.title || truncateUrl(url.original_url)}
@@ -236,8 +236,14 @@ export default function UrlsList({
                   {truncateUrl(url.original_url)}
                 </p>
               </div>
-              <div className="flex items-center gap-2 ml-4">
-                <Button asChild size="sm" variant="outline" title="Link öffnen">
+              <div className="flex items-center gap-1 sm:gap-2 sm:ml-4 sm:shrink-0">
+                <Button
+                  asChild
+                  size="sm"
+                  variant="outline"
+                  title="Link öffnen"
+                  className="shrink-0 px-2 sm:px-3"
+                >
                   <a
                     href={`${process.env.NEXT_PUBLIC_BASE_URL}/${
                       url.custom_code || url.short_code
@@ -248,12 +254,17 @@ export default function UrlsList({
                     <ExternalLink className="h-4 w-4" />
                   </a>
                 </Button>
-                <Button asChild size="sm" title="Analytics-Dashboard">
+                <Button
+                  asChild
+                  size="sm"
+                  title="Analytics-Dashboard"
+                  className="shrink-0 px-2 sm:px-3"
+                >
                   <Link
                     href={`/analytics/${url.custom_code || url.short_code}`}
                   >
-                    <BarChart3 className="h-4 w-4 mr-2" />
-                    Analytics
+                    <BarChart3 className="h-4 w-4" />
+                    <span className="hidden sm:inline sm:ml-2">Analytics</span>
                   </Link>
                 </Button>
                 <Button
@@ -261,6 +272,7 @@ export default function UrlsList({
                   variant="outline"
                   onClick={() => setQrPreviewUrl(url)}
                   title="QR anzeigen"
+                  className="shrink-0 px-2 sm:px-3"
                 >
                   <QrCode className="h-4 w-4" />
                 </Button>
@@ -268,7 +280,7 @@ export default function UrlsList({
                   size="sm"
                   variant="outline"
                   onClick={() => handleEditUrl(url)}
-                  className="cursor-pointer"
+                  className="cursor-pointer shrink-0 px-2 sm:px-3"
                   title="Link bearbeiten"
                 >
                   <Edit3 className="h-4 w-4" />
@@ -279,11 +291,13 @@ export default function UrlsList({
                       size="sm"
                       variant="destructive"
                       disabled={deletingUrls.has(url.id)}
-                      className="cursor-pointer"
+                      className="cursor-pointer shrink-0 px-2 sm:px-3"
                       title="URL löschen"
                     >
                       <Trash2 className="h-4 w-4" />
-                      {deletingUrls.has(url.id) ? "..." : ""}
+                      {deletingUrls.has(url.id) && (
+                        <span className="hidden sm:inline">...</span>
+                      )}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent className="py-8">

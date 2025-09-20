@@ -120,8 +120,8 @@ export default function AnalyticsDashboard({ shortCode }: Props) {
     <div className="flex flex-col gap-6">
       {/* URL Info */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex-1 min-w-0">
               <h3 className="text-lg font-semibold truncate">
                 {data.url.title || "Ohne Titel"}
@@ -129,17 +129,26 @@ export default function AnalyticsDashboard({ shortCode }: Props) {
               <p className="text-sm text-gray-500 truncate">
                 {data.url.originalUrl}
               </p>
-              <p className="text-sm text-blue-600 font-mono">{shortUrl}</p>
+              <p className="text-sm text-blue-600 font-mono break-all sm:break-normal">
+                {shortUrl}
+              </p>
             </div>
-            <div className="flex items-center gap-2 ml-4">
+            <div className="flex items-center gap-2 sm:ml-4 shrink-0">
               <Button
                 onClick={() => navigator.clipboard.writeText(shortUrl)}
                 size="sm"
                 variant="outline"
+                className="px-2 sm:px-3"
               >
-                Kopieren
+                <span className="hidden sm:inline">Kopieren</span>
+                <span className="sm:hidden">📋</span>
               </Button>
-              <Button asChild size="sm" variant="outline">
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="px-2 sm:px-3"
+              >
                 <a href={shortUrl} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-4 w-4" />
                 </a>
@@ -152,7 +161,7 @@ export default function AnalyticsDashboard({ shortCode }: Props) {
       {/* Statistik Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between  pb-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Gesamt Klicks</CardTitle>
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -167,7 +176,7 @@ export default function AnalyticsDashboard({ shortCode }: Props) {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between  pb-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Unique Klicks</CardTitle>
             <Globe className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -182,7 +191,7 @@ export default function AnalyticsDashboard({ shortCode }: Props) {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between  pb-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Top Land</CardTitle>
             <Globe className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -197,7 +206,7 @@ export default function AnalyticsDashboard({ shortCode }: Props) {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between  pb-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Top Device</CardTitle>
             <Monitor className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
