@@ -292,7 +292,11 @@ export default function DashboardPage() {
         {/* Two Column Layout */}
         <div className="lg:grid lg:grid-cols-2 lg:gap-8 min-h-full">
           {/* Left Column - URL Shortener (Sticky) */}
+
           <div className="lg:sticky lg:top-32 lg:h-fit mb-8 lg:mb-0">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Neue URL erstellen
+            </h2>
             <div className="flex flex-col gap-6">
               {/* URL Shortener Integration */}
               <div>
