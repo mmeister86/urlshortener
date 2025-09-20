@@ -101,7 +101,7 @@ export default function UrlShortener({ user, onSuccess }: UrlShortenerProps) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>URL verkürzen</CardTitle>
