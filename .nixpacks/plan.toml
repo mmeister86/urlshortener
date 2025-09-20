@@ -1,7 +1,7 @@
 [phases.setup]
 nixPkgs = [
   'nodejs_18',
-  'pnpm-9_x',
+  'pnpm-10_x',
   'pkg-config',
   'gcc',
   'g++'
