@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Debug: Check what URLs exist with this session_id (using admin client)
-    const { data: existingUrls, error: checkError } = await supabaseAdmin
+    const { data: existingUrls } = await supabaseAdmin
       .from("urls")
       .select("id, short_code, session_id, user_id")
       .eq("session_id", sessionId);
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     // Start transaction: Update all session links to user links (using admin client)
     console.log("🔄 Starting UPDATE query for session_id:", sessionId);
-    
+
     const { data: claimedUrls, error: claimError } = await supabaseAdmin
       .from("urls")
       .update({
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     console.log("📊 UPDATE Result:", {
       data: claimedUrls,
       error: claimError,
-      dataLength: claimedUrls?.length || 0
+      dataLength: claimedUrls?.length || 0,
     });
 
     if (claimError) {

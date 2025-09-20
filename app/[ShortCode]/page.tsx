@@ -1,4 +1,4 @@
-import { redirect, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase";
 import ClickTracker from "@/components/click-tracker";
 

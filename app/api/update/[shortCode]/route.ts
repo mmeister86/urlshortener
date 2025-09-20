@@ -84,7 +84,15 @@ export async function PATCH(
     }
 
     // Bereite Update-Daten vor (entferne undefined Werte)
-    const updateData: any = {};
+    type UpdateData = {
+      original_url?: string;
+      title?: string | null;
+      description?: string | null;
+      expires_at?: string | null;
+      updated_at?: string;
+    };
+
+    const updateData: UpdateData = {};
     if (validatedData.original_url !== undefined) {
       updateData.original_url = validatedData.original_url;
     }
