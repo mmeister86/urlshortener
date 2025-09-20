@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Copy, ExternalLink, BarChart3 } from "lucide-react";
+import QrPreview from "@/components/qr-preview";
 import Link from "next/link";
 
 const formSchema = z.object({
@@ -205,6 +206,15 @@ export default function UrlShortener({ user, onSuccess }: UrlShortenerProps) {
                 </Button>
               </div>
             )}
+
+            {/* QR Preview + Download */}
+            <div className="pt-2">
+              <QrPreview
+                text={`${process.env.NEXT_PUBLIC_BASE_URL}/${result.shortCode}`}
+                size={280}
+                filenameBase={result.shortCode}
+              />
+            </div>
 
             {!user && (
               <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded text-center">

@@ -18,6 +18,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { BarChart3, ExternalLink, Calendar, Trash2, Edit3 } from "lucide-react";
+import { QrCode } from "lucide-react";
+import QrPreview from "@/components/qr-preview";
 import { truncateUrl } from "@/lib/utils";
 
 interface Click {
@@ -59,6 +61,7 @@ export default function UrlsList({
 }: UrlsListProps) {
   const [deletingUrls, setDeletingUrls] = useState<Set<string>>(new Set());
   const [editingUrl, setEditingUrl] = useState<UrlWithClicks | null>(null);
+  const [qrPreviewUrl, setQrPreviewUrl] = useState<UrlWithClicks | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [editForm, setEditForm] = useState({
     original_url: "",
@@ -256,6 +259,14 @@ export default function UrlsList({
                 <Button
                   size="sm"
                   variant="outline"
+                  onClick={() => setQrPreviewUrl(url)}
+                  title="QR anzeigen"
+                >
+                  <QrCode className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
                   onClick={() => handleEditUrl(url)}
                   className="cursor-pointer"
                   title="Link bearbeiten"
@@ -321,6 +332,7 @@ export default function UrlsList({
                 <p className="text-sm text-gray-500">Klicks</p>
               </div>
             </div>
+            {/* Inline-QR entfernt zu Gunsten eines Modals */}
           </CardContent>
         </Card>
       ))}
@@ -432,6 +444,39 @@ export default function UrlsList({
             >
               {isUpdating ? "Wird gespeichert..." : "Speichern"}
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* QR Preview Modal */}
+      <AlertDialog
+        open={!!qrPreviewUrl}
+        onOpenChange={() => setQrPreviewUrl(null)}
+      >
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>QR Code</AlertDialogTitle>
+            <AlertDialogDescription>
+              QR Code für diese Kurz-URL (herunterladen als PNG oder SVG)
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {qrPreviewUrl && (
+            <div className="py-4 flex justify-center">
+              <QrPreview
+                text={`${process.env.NEXT_PUBLIC_BASE_URL}/${
+                  qrPreviewUrl.custom_code || qrPreviewUrl.short_code
+                }`}
+                size={440}
+                filenameBase={
+                  qrPreviewUrl.custom_code || qrPreviewUrl.short_code
+                }
+              />
+            </div>
+          )}
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Schließen</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
