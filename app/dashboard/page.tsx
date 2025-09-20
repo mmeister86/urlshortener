@@ -26,7 +26,10 @@ interface UrlWithClicks {
   short_code: string;
   custom_code: string | null;
   title: string | null;
+  description: string | null;
+  expires_at: string | null;
   created_at: string;
+  updated_at?: string;
   clicks: Click[];
 }
 
@@ -142,6 +145,16 @@ export default function DashboardPage() {
   const handleUrlDeleted = useCallback((deletedUrlId: string) => {
     setUrlsWithClicks((prev) => prev.filter((url) => url.id !== deletedUrlId));
   }, []);
+
+  // Callback when a URL is updated
+  const handleUrlUpdated = useCallback(
+    (updatedUrlId: string, updatedUrl: UrlWithClicks) => {
+      setUrlsWithClicks((prev) =>
+        prev.map((url) => (url.id === updatedUrlId ? updatedUrl : url))
+      );
+    },
+    []
+  );
 
   // Initial Load und User Check
   useEffect(() => {
@@ -318,6 +331,7 @@ export default function DashboardPage() {
                 urls={urlsWithClicks}
                 isLoading={isLoading}
                 onUrlDeleted={handleUrlDeleted}
+                onUrlUpdated={handleUrlUpdated}
               />
             </div>
           </div>
