@@ -109,11 +109,13 @@ export default function UrlShortener({ user, onSuccess }: UrlShortenerProps) {
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <Label htmlFor="url">Original URL *</Label>
+              <Label htmlFor="url" className="pb-2">
+                Die URL die du kürzen möchtest *
+              </Label>
               <Input
                 id="url"
                 type="url"
-                placeholder="https://example.com/very-long-url"
+                placeholder="https://beispiel.com/sehr-lange-url"
                 {...form.register("url")}
                 className="mt-1"
               />
@@ -125,7 +127,9 @@ export default function UrlShortener({ user, onSuccess }: UrlShortenerProps) {
             </div>
 
             <div>
-              <Label htmlFor="customCode">Custom Code (optional)</Label>
+              <Label htmlFor="customCode" className="pb-2">
+                Custom Code (optional)
+              </Label>
               <Input
                 id="customCode"
                 placeholder="mein-code"
@@ -143,7 +147,9 @@ export default function UrlShortener({ user, onSuccess }: UrlShortenerProps) {
             </div>
 
             <div>
-              <Label htmlFor="title">Titel (optional)</Label>
+              <Label htmlFor="title" className="pb-2">
+                Titel (optional)
+              </Label>
               <Input
                 id="title"
                 placeholder="Beschreibender Titel"
