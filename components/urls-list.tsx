@@ -1,9 +1,21 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, ExternalLink, Calendar } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { BarChart3, ExternalLink, Calendar, Trash2 } from "lucide-react";
 import { truncateUrl } from "@/lib/utils";
 
 interface Click {
@@ -30,9 +42,47 @@ interface UrlWithClicks {
 interface UrlsListProps {
   urls: UrlWithClicks[];
   isLoading: boolean;
+  onUrlDeleted?: (urlId: string) => void;
 }
 
-export default function UrlsList({ urls, isLoading }: UrlsListProps) {
+export default function UrlsList({
+  urls,
+  isLoading,
+  onUrlDeleted,
+}: UrlsListProps) {
+  const [deletingUrls, setDeletingUrls] = useState<Set<string>>(new Set());
+
+  const handleDeleteUrl = async (url: UrlWithClicks) => {
+    if (deletingUrls.has(url.id)) return;
+
+    setDeletingUrls((prev) => new Set([...prev, url.id]));
+
+    try {
+      const shortCode = url.custom_code || url.short_code;
+      const response = await fetch(`/api/delete/${shortCode}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Fehler beim Löschen");
+      }
+
+      // Notify parent component about successful deletion
+      onUrlDeleted?.(url.id);
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert(
+        error instanceof Error ? error.message : "Fehler beim Löschen der URL"
+      );
+    } finally {
+      setDeletingUrls((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(url.id);
+        return newSet;
+      });
+    }
+  };
   if (isLoading) {
     return (
       <div className="text-center py-8">
@@ -91,6 +141,43 @@ export default function UrlsList({ urls, isLoading }: UrlsListProps) {
                     Analytics
                   </Link>
                 </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      disabled={deletingUrls.has(url.id)}
+                      className="cursor-pointer"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      {deletingUrls.has(url.id) ? "..." : ""}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="py-8">
+                    <AlertDialogHeader className="py-4">
+                      <AlertDialogTitle>URL löschen</AlertDialogTitle>
+                      <AlertDialogDescription className="py-4">
+                        Möchtest du die URL &ldquo;
+                        <span className="font-mono font-semibold">
+                          /{url.custom_code || url.short_code}
+                        </span>
+                        &rdquo; wirklich löschen?
+                        <br />
+                        <br />
+                        Diese Aktion kann nicht rückgängig gemacht werden.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="py-4">
+                      <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleDeleteUrl(url)}
+                        className="bg-destructive text-white hover:bg-destructive/90"
+                      >
+                        Löschen
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
           </CardHeader>

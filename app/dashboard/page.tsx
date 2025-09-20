@@ -138,6 +138,11 @@ export default function DashboardPage() {
     [user, loadUrlsWithClicks]
   );
 
+  // Callback when a URL is deleted
+  const handleUrlDeleted = useCallback((deletedUrlId: string) => {
+    setUrlsWithClicks((prev) => prev.filter((url) => url.id !== deletedUrlId));
+  }, []);
+
   // Initial Load und User Check
   useEffect(() => {
     const checkUserAndLoadData = async () => {
@@ -167,7 +172,7 @@ export default function DashboardPage() {
 
   // Check for session links when user logs in (only once)
   useEffect(() => {
-    if (user) {
+    if (user?.id) {
       // Check for claimable session links
       const checkForSessionLinks = async () => {
         try {
@@ -231,7 +236,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
+      <header className="bg-white shadow sticky top-0 z-10">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
@@ -270,34 +275,52 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        {/* URL Shortener Integration */}
-        <div className="mb-8">
-          <DashboardUrlShortener user={user} onSuccess={handleUrlCreated} />
-        </div>
+      <main className="container mx-auto px-4 py-8 min-h-[calc(100vh-8rem)]">
+        {/* Two Column Layout */}
+        <div className="lg:grid lg:grid-cols-2 lg:gap-8 min-h-full">
+          {/* Left Column - URL Shortener (Sticky) */}
+          <div className="lg:sticky lg:top-32 lg:h-fit mb-8 lg:mb-0">
+            <div className="flex flex-col gap-6">
+              {/* URL Shortener Integration */}
+              <div>
+                <DashboardUrlShortener
+                  user={user}
+                  onSuccess={handleUrlCreated}
+                />
+              </div>
 
-        {/* Claim Links Section - Only show for logged-in users with session links */}
-        {user && hasSessionLinks && (
-          <div className="mb-8">
-            <ClaimLinksButton onLinksClaimed={handleLinksClaimed} />
-          </div>
-        )}
-
-        {/* Links Section */}
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            {user ? "Deine Links" : "Deine Session-Links"}
-          </h2>
-          {!user && urlsWithClicks.length > 0 && (
-            <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-blue-800 text-sm">
-                💡 <strong>Tipp:</strong> Melde dich an oder registriere dich,
-                um deine Links dauerhaft zu speichern und erweiterte Analytics
-                zu erhalten!
-              </p>
+              {/* Claim Links Section - Only show for logged-in users with session links */}
+              {user && hasSessionLinks && (
+                <div>
+                  <ClaimLinksButton onLinksClaimed={handleLinksClaimed} />
+                </div>
+              )}
             </div>
-          )}
-          <UrlsList urls={urlsWithClicks} isLoading={isLoading} />
+          </div>
+
+          {/* Right Column - Links List */}
+          <div className="flex flex-col">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              {user ? "Deine Links" : "Deine Session-Links"}
+            </h2>
+            {!user && urlsWithClicks.length > 0 && (
+              <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-blue-800 text-sm">
+                  💡 <strong>Tipp:</strong> Melde dich an oder registriere dich,
+                  um deine Links dauerhaft zu speichern und erweiterte Analytics
+                  zu erhalten!
+                </p>
+              </div>
+            )}
+            {/* URLs List */}
+            <div>
+              <UrlsList
+                urls={urlsWithClicks}
+                isLoading={isLoading}
+                onUrlDeleted={handleUrlDeleted}
+              />
+            </div>
+          </div>
         </div>
       </main>
     </div>
