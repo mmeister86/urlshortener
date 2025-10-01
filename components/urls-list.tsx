@@ -361,7 +361,11 @@ export default function UrlsList({
                 </span>
                 <span className="flex items-center">
                   <Calendar className="h-4 w-4 mr-1" />
-                  {new Date(url.created_at).toLocaleDateString("de-DE")}
+                  {new Date(url.created_at).toLocaleDateString("de-DE", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })}
                 </span>
               </div>
               <div className="text-right">
