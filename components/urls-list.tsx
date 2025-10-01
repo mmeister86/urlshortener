@@ -18,9 +18,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { BarChart3, ExternalLink, Calendar, Trash2, Edit3 } from "lucide-react";
-import { QrCode } from "lucide-react";
+import { QrCode, Globe } from "lucide-react";
 import QrPreview from "@/components/qr-preview";
 import { truncateUrl } from "@/lib/utils";
+import Image from "next/image";
 
 interface Click {
   id: string;
@@ -44,6 +45,10 @@ interface UrlWithClicks {
   created_at: string;
   updated_at?: string;
   clicks: Click[];
+  page_title?: string | null;
+  page_description?: string | null;
+  preview_image_url?: string | null;
+  favicon_url?: string | null;
 }
 
 interface UrlsListProps {
@@ -227,23 +232,49 @@ export default function UrlsList({
       {urls.map((url) => (
         <Card key={url.id}>
           <CardHeader>
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <CardTitle className="text-lg truncate">
-                  {url.title || truncateUrl(url.original_url)}
-                </CardTitle>
-                <p className="text-sm text-gray-500 truncate">
-                  {truncateUrl(url.original_url)}
-                </p>
+            <div className="flex flex-col gap-3">
+              {/* Preview Image/Icon + Title */}
+              <div className="flex gap-3 flex-1 min-w-0">
+                {/* Thumbnail */}
+                <div className="h-12 w-12 shrink-0 flex items-center justify-center bg-gray-100 rounded border border-gray-200 overflow-hidden">
+                  {url.preview_image_url || url.favicon_url ? (
+                    <Image
+                      src={url.preview_image_url || url.favicon_url || ""}
+                      alt={url.page_title || url.title || "Preview"}
+                      width={48}
+                      height={48}
+                      className="object-cover w-full h-full"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <Globe className="h-6 w-6 text-gray-400" />
+                  )}
+                </div>
+
+                {/* Title & URL */}
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-lg truncate">
+                    {url.page_title ||
+                      url.title ||
+                      truncateUrl(url.original_url)}
+                  </CardTitle>
+                  <p className="text-sm text-gray-500 truncate">
+                    {truncateUrl(url.original_url)}
+                  </p>
+                  {url.page_description && (
+                    <p className="text-xs text-gray-400 mt-1 line-clamp-1">
+                      {url.page_description}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-1 sm:gap-2 sm:ml-4 sm:shrink-0">
-                <Button
-                  asChild
-                  size="sm"
-                  variant="outline"
-                  title="Link öffnen"
-                  className="shrink-0 px-2 sm:px-3"
-                >
+
+              {/* Action Buttons - jetzt unter der Beschreibung */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button asChild size="sm" variant="outline" title="Link öffnen">
                   <a
                     href={`${process.env.NEXT_PUBLIC_BASE_URL}/${
                       url.custom_code || url.short_code
@@ -254,12 +285,7 @@ export default function UrlsList({
                     <ExternalLink className="h-4 w-4" />
                   </a>
                 </Button>
-                <Button
-                  asChild
-                  size="sm"
-                  title="Analytics-Dashboard"
-                  className="shrink-0 px-2 sm:px-3"
-                >
+                <Button asChild size="sm" title="Analytics-Dashboard">
                   <Link
                     href={`/analytics/${url.custom_code || url.short_code}`}
                   >
@@ -272,7 +298,6 @@ export default function UrlsList({
                   variant="outline"
                   onClick={() => setQrPreviewUrl(url)}
                   title="QR anzeigen"
-                  className="shrink-0 px-2 sm:px-3"
                 >
                   <QrCode className="h-4 w-4" />
                 </Button>
@@ -280,7 +305,7 @@ export default function UrlsList({
                   size="sm"
                   variant="outline"
                   onClick={() => handleEditUrl(url)}
-                  className="cursor-pointer shrink-0 px-2 sm:px-3"
+                  className="cursor-pointer"
                   title="Link bearbeiten"
                 >
                   <Edit3 className="h-4 w-4" />
@@ -291,7 +316,7 @@ export default function UrlsList({
                       size="sm"
                       variant="destructive"
                       disabled={deletingUrls.has(url.id)}
-                      className="cursor-pointer shrink-0 px-2 sm:px-3"
+                      className="cursor-pointer"
                       title="URL löschen"
                     >
                       <Trash2 className="h-4 w-4" />

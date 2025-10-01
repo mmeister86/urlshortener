@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Copy, ExternalLink, BarChart3 } from "lucide-react";
 import QrPreview from "@/components/qr-preview";
 import Link from "next/link";
+import UrlPreview, { type UrlMetadata } from "@/components/url-preview";
 
 const formSchema = z.object({
   url: z.string().url("Bitte gib eine gültige URL ein"),
@@ -44,6 +45,11 @@ export default function UrlShortener({ user, onSuccess }: UrlShortenerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Metadata State
+  const [metadata, setMetadata] = useState<UrlMetadata>({});
+  const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
+  const [metadataError, setMetadataError] = useState<string | null>(null);
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -52,6 +58,66 @@ export default function UrlShortener({ user, onSuccess }: UrlShortenerProps) {
       title: "",
     },
   });
+
+  // URL-Input Watch für Auto-Fetch
+  const watchedUrl = form.watch("url");
+
+  // Metadata automatisch fetchen wenn URL sich ändert
+  useEffect(() => {
+    const fetchMetadata = async (url: string) => {
+      setIsLoadingMetadata(true);
+      setMetadataError(null);
+      setMetadata({});
+
+      try {
+        const response = await fetch("/api/fetch-metadata", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.error || "Metadaten konnten nicht geladen werden"
+          );
+        }
+
+        setMetadata(data);
+      } catch (error) {
+        console.error("Metadata fetch error:", error);
+        setMetadataError(
+          error instanceof Error
+            ? error.message
+            : "Vorschau konnte nicht geladen werden"
+        );
+      } finally {
+        setIsLoadingMetadata(false);
+      }
+    };
+
+    // Debounce: Warte 800ms nach letzter Eingabe
+    const timeoutId = setTimeout(() => {
+      if (watchedUrl && watchedUrl.startsWith("http")) {
+        try {
+          new URL(watchedUrl); // Validiere URL
+          fetchMetadata(watchedUrl);
+        } catch {
+          // Ungültige URL - ignorieren
+          setMetadata({});
+          setMetadataError(null);
+        }
+      } else {
+        setMetadata({});
+        setMetadataError(null);
+      }
+    }, 800);
+
+    return () => clearTimeout(timeoutId);
+  }, [watchedUrl]);
 
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
@@ -67,6 +133,11 @@ export default function UrlShortener({ user, onSuccess }: UrlShortenerProps) {
           url: data.url,
           customCode: data.customCode || undefined,
           title: data.title || undefined,
+          // Füge Metadaten hinzu
+          pageTitle: metadata.pageTitle || undefined,
+          pageDescription: metadata.pageDescription || undefined,
+          previewImageUrl: metadata.previewImageUrl || undefined,
+          faviconUrl: metadata.faviconUrl || undefined,
         }),
       });
 
@@ -78,6 +149,10 @@ export default function UrlShortener({ user, onSuccess }: UrlShortenerProps) {
 
       setResult(result);
       form.reset();
+
+      // Reset metadata nach erfolgreichem Submit
+      setMetadata({});
+      setMetadataError(null);
 
       // Callback auslösen für Parent-Component
       if (onSuccess) {
@@ -124,6 +199,17 @@ export default function UrlShortener({ user, onSuccess }: UrlShortenerProps) {
                 <p className="text-red-500 text-sm mt-1">
                   {form.formState.errors.url.message}
                 </p>
+              )}
+
+              {/* URL Preview */}
+              {(isLoadingMetadata || metadata.pageTitle || metadataError) && (
+                <div className="mt-3">
+                  <UrlPreview
+                    metadata={metadata}
+                    isLoading={isLoadingMetadata}
+                    error={metadataError}
+                  />
+                </div>
               )}
             </div>
 

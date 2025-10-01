@@ -12,6 +12,11 @@ const shortenSchema = z.object({
   title: z.string().max(100).optional(),
   description: z.string().max(500).optional(),
   expiresAt: z.string().datetime().optional(),
+  // Automatisch gescrapte Metadaten
+  pageTitle: z.string().optional(),
+  pageDescription: z.string().optional(),
+  previewImageUrl: z.string().url().optional(),
+  faviconUrl: z.string().url().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -104,6 +109,10 @@ export async function POST(request: NextRequest) {
       expires_at: validatedData.expiresAt || null,
       user_id: user?.id || null,
       session_id: user ? null : session.anonymousId, // Nur für anonyme User
+      page_title: validatedData.pageTitle || null,
+      page_description: validatedData.pageDescription || null,
+      preview_image_url: validatedData.previewImageUrl || null,
+      favicon_url: validatedData.faviconUrl || null,
     };
 
     console.log("💾 Inserting URL with data:", insertData);

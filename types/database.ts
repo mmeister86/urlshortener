@@ -15,6 +15,10 @@ export interface Database {
           is_active: boolean;
           user_id: string | null;
           session_id: string | null;
+          page_title: string | null;
+          page_description: string | null;
+          preview_image_url: string | null;
+          favicon_url: string | null;
         };
         Insert: {
           id?: string;
@@ -29,6 +33,10 @@ export interface Database {
           is_active?: boolean;
           user_id?: string | null;
           session_id?: string | null;
+          page_title?: string | null;
+          page_description?: string | null;
+          preview_image_url?: string | null;
+          favicon_url?: string | null;
         };
         Update: {
           id?: string;
@@ -43,6 +51,10 @@ export interface Database {
           is_active?: boolean;
           user_id?: string | null;
           session_id?: string | null;
+          page_title?: string | null;
+          page_description?: string | null;
+          preview_image_url?: string | null;
+          favicon_url?: string | null;
         };
       };
       clicks: {
