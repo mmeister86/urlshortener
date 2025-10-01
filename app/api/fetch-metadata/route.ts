@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getClientIP } from "@/lib/server-utils";
 import { ratelimit } from "@/lib/rate-limit";
 import { z } from "zod";
-import * as cheerio from "cheerio";
+
+// Runtime Configuration für Node.js
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const fetchMetadataSchema = z.object({
   url: z.string().url("Ungültige URL"),
@@ -10,6 +13,8 @@ const fetchMetadataSchema = z.object({
 
 // Eigene Metadata-Extraction ohne native Dependencies
 async function extractMetadata(html: string, url: string) {
+  // Dynamischer Import von cheerio zur Build-Zeit
+  const cheerio = await import("cheerio");
   const $ = cheerio.load(html);
 
   // OpenGraph Image (primär)
